@@ -1,0 +1,602 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#include<conio.h>
+#include<string.h>
+#include<ctype.h>
+#include<time.h>
+#include<dir.h>
+#include<dos.h>
+#define leapyear ((year%4==0&&year%100!=0)||(year%400==0))
+#define true 1
+#define ch '-'
+#define max_no 91
+void left(int month,int year);
+void right(int month,int year);
+void down(int month,int year);
+void up(int month,int year);
+void view_file();
+void select_file();
+void name();
+void delete_file();
+void delete_option();
+void star1();
+void name_created();
+void front_screen();
+void create_text_filename(int m,int y);
+void insert_event(int month,int year);
+void Zeller(int month,int year);
+void reminder();
+void view_option();
+int num,result;
+int count=1;
+char str[100];
+int month,year,zeller,keycode,j,day1,month1,year1,zmonth,zyear,day;
+int monthday[]={31,28,31,30,31,30,31,31,30,31,30,31},i;
+char *monthname[]={"JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"};
+char *monthname1[]={"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"};
+int getzeller(int month,int year);
+void printchar(char c);
+void calendar();
+void main()
+{
+char ch1;
+struct date d;
+if(count)
+{
+front_screen();
+}
+count=0;
+clrscr();
+getdate(&d);
+printf("\t\t\t");
+textcolor(GREEN);
+delay(200);
+cprintf("*******WELCOME TO CALENDAR*******\n");
+textcolor(WHITE);
+delay(400);
+printf("\n\n\t\t\tPress 1 to view a Calendar.");
+delay(60);
+printf("\n\n\t\t\tPress 2 to view next year.");
+delay(60);
+printf("\n\n\t\t\tPress 3 to view previous year.");
+delay(60);
+printf("\n\n\t\t\tPress 4 to view next month.");
+delay(60);
+printf("\n\n\t\t\tPress 5 to view previous month.");
+delay(60);
+printf("\n\n\t\t\tPress 6 to enter event.");
+delay(60);
+printf("\n\n\t\t\tpress 7 to view event files.");
+delay(60);
+printf("\n\n\t\t\tpress 8 to delete event file.");
+delay(60);
+printf("\n\n\t\t\tPress 9 to exit.\n");
+printf("\t\t\t");
+textcolor(YELLOW);
+delay(80);
+cprintf("\n\ncurrent system date is %d  %d  %d\n",d.da_day,d.da_mon,d.da_year);
+textcolor(WHITE);
+delay(100);
+printf("\nEnter your choice:");
+do{
+ch1=getchar();
+switch(ch1)
+{
+case '1':calendar();
+break;
+case '2':left(month,year);
+break;
+case '3':right(month,year);
+break;
+case '4':up(month,year);
+break;
+case '5':down(month,year);
+break;
+case '6':insert_event(month,year);
+break;
+case '7':reminder();
+break;
+case '8':select_file();
+break;
+case '9':exit(0);
+break;
+}
+}while(ch1!=0);
+}
+void calendar()
+{
+clrscr();
+printf("\t\t");
+textcolor(LIGHTGREEN);
+delay(500);
+cprintf("\nThis program shows a DEPARTMENT CALENDAR.......\n");
+printf("\t\t\t\t");
+cprintf("\n\nEnter month and year to fetch the calendar in MM-YYYY format.\n");
+textcolor(WHITE);
+while(true)
+{
+fflush(stdin);
+printf("\t\t\t\t");
+delay(100);
+textcolor(RED);
+cprintf("\n\nEnter MM-YYYY:");
+printf("\t");
+textcolor(WHITE);
+scanf("%d-%d",&month,&year);
+if(year<0)
+{
+printf("\nInvalid year value...\n");
+continue;
+}
+if(year<100)
+year+=1900;
+if(year<1582||year>4902)
+{
+printf("Invalid year value...\n");
+continue;
+}
+if(month<1||month>12)
+{
+printf("Invalid month value...\n");
+continue;
+}
+break;
+}
+Zeller(month,year);
+getch();
+main();
+}
+void left(int month,int year)
+{
+clrscr();
+year++;
+Zeller(month,year);
+getch();
+main();
+}
+void right(int month,int year)
+{
+clrscr();
+year--;
+Zeller(month,year);
+getch();
+main();
+}
+void up(int month,int year)
+{
+clrscr();
+month++;
+if(month>12)
+{
+month=1;
+year++;
+}
+Zeller(month,year);
+getch();
+main();
+}
+void down(int month,int year)
+{
+clrscr();
+month--;
+if(month<1)
+{
+month=12;
+year--;
+}
+Zeller(month,year);
+getch();
+main();
+}
+void Zeller(int month,int year)
+{
+zeller=getzeller(month,year);
+clrscr();
+printf("\n\n\t\t");
+cprintf("             %s %d               \n",monthname[month-1],year);
+monthday[1]=leapyear?29:28;
+printchar(ch);
+textcolor(12);
+printf("\t");
+cprintf("SUN");
+textcolor(LIGHTGREEN);
+cprintf("     MON     TUE     WED     THU     FRI     SAT");
+textcolor(7);
+printchar(ch);
+for(i=1;i<=zeller;i++)
+printf("\t -");
+j=zeller;
+for(i=1;i<=monthday[month-1];i++)
+{
+if(j++%7==0)
+{
+printf("\n\t");
+textcolor(12);
+cprintf("%2d",i);
+textcolor(WHITE);
+}
+else
+printf("      %2d",i);
+}
+printchar(ch);
+}
+int getzeller(int month,int year)
+{
+int day=1,zmonth,zyear,zeller;
+if(month<3)
+zmonth=month+10;
+else
+zmonth=month-2;
+if(zmonth>10)
+zyear=year-1;
+else
+zyear=year;
+zeller=((int)((13*zmonth-1)/5)+day+zyear%100+(int)((zyear%100)/4)-2*(int)(zyear/100)+(int)(zyear/400)+77)%7;
+return zeller;
+}
+void printchar(char c)
+{
+int i;
+printf("\n\t");
+for(i=1;i<=51;i++)
+printf("%c",c);
+printf("\n");
+}
+void insert_event(int month1,int year1)
+{
+textcolor(LIGHTGREEN);
+cprintf("-------------------------------------------------------------");
+printf("\n\t");
+textcolor(LIGHTRED);
+cprintf("Enter month:");
+scanf("%d",&month1);
+printf("\n\t");
+cprintf("Enter year:");
+scanf("%d",&year1);
+printf("\n");
+textcolor(LIGHTGREEN);
+cprintf("--------------------------------------------------------------");
+printf("\n\t");
+create_text_filename(month1,year1);
+exit(0);
+}
+void create_text_filename(int m,int y)
+{
+char ch2;
+FILE *fp;
+char file2[120];
+char stryear[5];
+char str[70];
+strcpy(file2,monthname1[m-1]);
+itoa(y,stryear,10);
+strcat(file2,stryear);
+strcat(file2,".txt");
+textcolor(YELLOW);
+printf("\n");
+cprintf("Enter data to be stored in %s:",file2);
+printf("\n");
+cprintf("To stop press ctrl-z");
+printf("\n");
+textcolor(WHITE);
+fp=fopen(file2,"a");
+fprintf(fp,"\n------------------------------------------------------------------\n");
+fprintf(fp,"\nEntered Event Details are\n");
+textcolor(RED);
+cprintf("\nEnter details of Event\n");
+printf("\t\t\t");
+textcolor(WHITE);
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nEvent Date:");
+printf("\nEvent Date:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nEvent Name:");
+printf("\nEvent Name:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nEvent Time:");
+printf("\nEvent Time:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nVenue:");
+printf("\nVenue:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nFaculty:");
+printf("\nFaculty:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\nStudent Co-ordinators:");
+printf("\nStudent Co-ordinators:");
+while((ch2=getchar())!='\n')
+fputc(ch2,fp);
+fprintf(fp,"\n----------------------------------------------------------------\n");
+fclose(fp);
+clrscr();
+printf("\t\t\t");
+textcolor(GREEN);
+cprintf("\n\n\n\n\n\n\n\n\nFILE INSERTED SUCCESSFULLY!!!!!!!!");
+textcolor(WHITE);
+getch();
+main();
+}
+void reminder()
+{
+int done;
+struct ffblk a;
+char value;
+clrscr();
+textcolor(LIGHTBLUE);
+cprintf("\nPress any key to view the files in current directory\n\n");
+textcolor(WHITE);
+printf("\t\t\t\t");
+getch();
+done=findfirst("*.txt",&a,0);
+while(!done)
+{
+printf("%s\n",a.ff_name);
+done=findnext(&a);
+}
+view_option();
+getch();
+}
+void select_file()
+{
+int done;
+struct ffblk a;
+char value;
+clrscr();
+textcolor(LIGHTBLUE);
+cprintf("\nPress any key to view the files in current directory\n\n");
+printf("\t\t\t\t");
+textcolor(WHITE);
+getch();
+done=findfirst("*.txt",&a,0);
+while(!done)
+{
+printf("%s\n",a.ff_name);
+done=findnext(&a);
+}
+delete_option();
+}
+void view_option()
+{
+int value;
+textcolor(RED);
+cprintf("\nPress 1 to view the file otherwise 0\n");
+printf("\t\t\t\t\t\t");
+textcolor(WHITE);
+scanf("%d",&value);
+if(value)
+{
+view_file();
+main();
+}
+else
+main();
+}
+void delete_file()
+{
+int status;
+char filename[250];
+textcolor(YELLOW);
+cprintf("\nEnter the name of the file to be deleted\n");
+printf("\t\t\t\t\t");
+textcolor(WHITE);
+scanf("%s",filename);
+status=remove(filename);
+if(status==0)
+{
+clrscr();
+printf("\n\n\n\n\n\n\n\n\n\t\t");
+textcolor(GREEN);
+cprintf("\n%s File Deleted Successfully!!!!!!!\n",filename);
+textcolor(WHITE);
+}
+else
+{
+printf("Unable to delete file\n");
+perror("ERROR");
+}
+getch();
+main();
+}
+void view_file()
+{
+char filename[200];
+FILE *file;
+textcolor(YELLOW);
+cprintf("\nEnter the filename:\n");
+printf("\t\t\t\t\t\t\t\t");
+textcolor(WHITE);
+scanf("%s",filename);
+file=fopen(filename,"r");
+if(file==0)
+{
+printf("couldnot open file\n");
+}
+else
+{
+int x;
+clrscr();
+while((x=fgetc(file))!=EOF)
+{
+printf("%c",x);
+}
+fclose(file);
+}
+getch();
+}
+void delete_option()
+{
+int value;
+textcolor(YELLOW);
+cprintf("\npress 1 to delete a file otherwise 0\n");
+printf("\t\t\t\t\t\t");
+textcolor(WHITE);
+scanf("%d",&value);
+if(value)
+delete_file();
+else
+main();
+}
+void front_screen()
+{
+int i,j;
+int word_count=1;
+clrscr();
+while(word_count--)
+{
+sound(10*random(100));
+delay(75);
+nosound();
+textcolor(GREEN);
+for(i=1;i<=8;i++)
+{
+for(j=8-i;j>0;j--)
+{
+cprintf("*");
+}
+printf("\n");
+}
+delay(500);
+for(i=1;i<10;i++)
+{
+textcolor(RED);
+cprintf("*");
+printf("\n");
+}
+delay(500);
+for(i=1;i<=7;i++)
+{
+for(j=1;j<=i;j++)
+{
+textcolor(GREEN);
+cprintf("*");
+}
+printf("\n");
+}
+textcolor(GREEN);
+gotoxy(74,1);
+for(i=1;i<8;i++)
+cprintf("*");
+gotoxy(75,2);
+for(i=1;i<7;i++);
+cprintf("*");
+gotoxy(76,3);
+for(i=1;i<6;i++)
+cprintf("*");
+gotoxy(77,4);
+for(i=1;i<5;i++)
+cprintf("*");
+gotoxy(80,1);
+cprintf("*");
+gotoxy(78,5);
+for(i=1;i<4;i++)
+cprintf("*");
+gotoxy(79,6);
+for(i=1;i<3;i++)
+cprintf("*");
+gotoxy(80,7);
+for(i=1;i<2;i++)
+cprintf("*");
+delay(500);
+for(i=1;i<9;i++)
+{
+textcolor(RED);
+gotoxy(80,8+i);
+cprintf("*");
+}
+delay(500);
+textcolor(GREEN);
+gotoxy(80,17);
+cprintf("*");
+gotoxy(79,18);
+for(i=1;i<=2;i++)
+cprintf("*");
+gotoxy(78,19);
+for(i=1;i<=3;i++)
+cprintf("*");
+gotoxy(77,20);
+for(i=1;i<=4;i++)
+cprintf("*");
+gotoxy(76,21);
+for(i=1;i<=5;i++)
+cprintf("*");
+gotoxy(75,22);
+for(i=1;i<=6;i++)
+cprintf("*");
+gotoxy(74,23);
+for(i=1;i<=7;i++)
+cprintf("*");
+gotoxy(8,24);
+for(i=1;i<=153;i++)
+cprintf("*");
+}
+textcolor(WHITE);
+star1();
+delay(1000);
+name();
+delay(1000);
+name_created();
+getch();
+}
+void name()
+{
+int count=1;
+gotoxy(17,5);
+while(count--)
+{
+sound(10*random(100));
+delay(75);
+nosound();
+textcolor(YELLOW);
+cprintf("\n\n\nWELCOME TO CREATION OF DEPARTMENT CALENDAR\n");
+printf("\t\t\t\t\t\t\t");
+cprintf("USING 'C'");
+}
+}
+void name_created()
+{
+int count=1;
+while(count--)
+{
+sound(10*random(100));
+delay(75);
+nosound();
+gotoxy(45,15);
+textcolor(RED);
+cprintf("Created by,\n\n");
+gotoxy(45,16);
+delay(500);
+textcolor(LIGHTGREEN);
+cprintf("Harshitha Lakshmi S");
+gotoxy(45,17);
+cprintf("Harshitha D K");
+gotoxy(45,18);
+cprintf("Lakshmi S");
+gotoxy(45,19);
+cprintf("Meghashree M");
+gotoxy(43,21);
+delay(500);
+textcolor(BLUE);
+cprintf("(Department of Computer Science)");
+}
+textcolor(WHITE);
+}
+void star1()
+{
+int word_count=2;
+while(word_count--)
+{
+sound(10*random(100));
+delay(75);
+nosound();
+textcolor(GREEN);
+gotoxy(8,1);
+for(i=1;i<238;i++)
+cprintf("*");
+}
+}
